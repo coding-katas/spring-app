@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spring-app
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  selector:
+      matchLabels:
+        app: spring-app      
+  template:
+    metadata:
+      labels:
+        app: spring-app
+        version: "v1"
+    spec:
+      containers:
+        - name: server
+          image: 'gcr.io/project01-310404/spring-server'
+          ports:
+            - containerPort: 8083
+        - name: client
+          image: 'gcr.io/project01-310404/spring-client'
+          ports:
+            - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spring-app
+  labels:
+    name: spring-app
+    version: "v1"
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    app: spring-app
+    version: "v1"
+  type: LoadBalancer
